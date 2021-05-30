@@ -1,0 +1,8 @@
+name: Man10coinflip
+version: 1.0-SNAPSHOT
+main: com.github.roito_hnw.man10coinflip.Coinflip
+api-version: 1.16
+authors: [ roito_hnw ]
+description: Man10coinflip
+commands:
+  cf:
