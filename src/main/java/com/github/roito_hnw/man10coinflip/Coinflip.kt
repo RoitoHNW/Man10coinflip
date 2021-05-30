@@ -36,20 +36,20 @@ class Coinflip : JavaPlugin(),Listener {
         when (args[0]) {
             "create" -> {
                 if (args.size != 3) {
-                    sender.sendMessage("§c§l[CF]使い方が間違ってます")
+                    sender.sendMessage("§e§l[CF]使い方が間違ってます")
                     return true
                 }
                 if (args[1].toDoubleOrNull() == null) {
-                    sender.sendMessage("§c§l[CF]/cf [金額] [heads or tails]")
+                    sender.sendMessage("§e§l[CF]/cf [金額] [heads or tails]")
                     return true
                 }
                 if (vault.getBalance(sender.uniqueId) < args[1].toDouble()) {
-                    sender.sendMessage("§c§l[CF]所持金が足りません")
+                    sender.sendMessage("§e§l[CF]所持金が足りません")
                     return true
                 }
 
                 if (coindata.containsKey(sender.uniqueId)) {
-                    sender.sendMessage("§c§l[CF]一部屋しか立てれません。")
+                    sender.sendMessage("§e§l[CF]一部屋しか立てれません。")
                     return true
                 }
 
@@ -97,7 +97,7 @@ class Coinflip : JavaPlugin(),Listener {
                         return true
                     }
                     else -> {
-                        sender.sendMessage("§c§l[CF]/cf [金額][heads or tails]")
+                        sender.sendMessage("§e§l[CF]/cf [金額][heads or tails]")
                         return true
                     }
                 }
@@ -105,29 +105,29 @@ class Coinflip : JavaPlugin(),Listener {
 
             "join" -> {
                 if (args.size != 2) {
-                    sender.sendMessage("§c§l[CF]使い方が間違ってます")
+                    sender.sendMessage("§e§l[CF]使い方が間違ってます")
                     return true
                 }
                 val player = Bukkit.getPlayer(args[1])
                 if (player == null) {
-                    sender.sendMessage("§c§l[CF]プレイヤーが存在しない、またはオフラインです")
+                    sender.sendMessage("§e§l[CF]プレイヤーが存在しない、またはオフラインです")
                     return true
 
                 }
                 if (!coindata.containsKey(player.uniqueId)) {
-                    sender.sendMessage("§c§l[CF]その部屋は存在しません")
+                    sender.sendMessage("§e§l[CF]その部屋は存在しません")
                     return true
 
                 }
 
                 if (player == sender){
-                    sender.sendMessage("§c§l[CF]自分の部屋には入れません")
+                    sender.sendMessage("§e§l[CF]自分の部屋には入れません")
                     return true
                 }
 
                 val bet = coindata[player.uniqueId]?.first
                 if (vault.getBalance(sender.uniqueId) < bet!!) {
-                    sender.sendMessage("§c§l[CF]所持金が足りません")
+                    sender.sendMessage("§e§l[CF]所持金が足りません")
                     return true
                 }
                 vault.withdraw(sender.uniqueId, bet)
