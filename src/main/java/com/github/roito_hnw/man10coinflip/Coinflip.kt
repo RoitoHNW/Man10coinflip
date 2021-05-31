@@ -29,9 +29,7 @@ class Coinflip : JavaPlugin(),Listener {
     lateinit var vault: VaultManager
     val coindata = HashMap<UUID, Pair<Double, Boolean>>()
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-
         if (sender !is Player) return true
-
         if (args.isEmpty()) return true
         when (args[0]) {
             "create" -> {
@@ -47,23 +45,22 @@ class Coinflip : JavaPlugin(),Listener {
                     sender.sendMessage("§e§l[CF]所持金が足りません")
                     return true
                 }
-
                 if (coindata.containsKey(sender.uniqueId)) {
                     sender.sendMessage("§e§l[CF]一部屋しか立てれません。")
                     return true
                 }
-
                 when (args[2]) {
                     "heads" -> {
+                        val thinkbet = args[1].toDouble()
                         vault.withdraw(sender.uniqueId, args[1].toDouble())
                         coindata[sender.uniqueId] = Pair(args[1].toDouble(), true)
-                       sendHoverText("§6§l[CF]${sender.name}が表予想でコインフリップを開いてます！\n裏だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
+                       sendHoverText("§6§l[CF]${sender.name}が表予想で" + thinkbet + "円コインフリップを開いてます！\n裏だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
                         Bukkit.getScheduler().runTaskAsynchronously(this, Runnable {
                             for (time in 1..6) {
                                 Thread.sleep(10000)
                                 if (!coindata.containsKey(sender.uniqueId)) return@Runnable
                                 sendHoverText(
-                                    "§6§l[CF]${sender.name}が表予想でコインフリップを開いてます！\n裏だと思う人は参加してみよう。残り${60 - time * 10}秒",
+                                    "§6§l[CF]${sender.name}が表予想で" + thinkbet + "円コインフリップを開いてます！\n裏だと思う人は参加してみよう。残り${60 - time * 10}秒",
                                     "§bまたはここをクリック！",
                                     "/cf join ${sender.name}"
                                 )
@@ -76,15 +73,16 @@ class Coinflip : JavaPlugin(),Listener {
                         return true
                     }
                     "tails" -> {
+                        val thinkbet = args[1].toDouble()
                         vault.withdraw(sender.uniqueId, args[1].toDouble())
                         coindata[sender.uniqueId] = Pair(args[1].toDouble(), false)
-                        sendHoverText("§6§l[CF]${sender.name}が裏予想でコインフリップを開いてます！\n表だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
+                        sendHoverText("§6§l[CF]${sender.name}が裏予想で" + thinkbet + "円コインフリップを開いてます！\n表だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
                         Bukkit.getScheduler().runTaskAsynchronously(this, Runnable {
                             for (time in 1..6) {
                                 Thread.sleep(10000)
                                 if (!coindata.containsKey(sender.uniqueId)) return@Runnable
                                 sendHoverText(
-                                    "§6§l[CF]${sender.name}が裏予想でコインフリップを開いてます！\n表だと思う人は参加してみよう。残り${60 - time * 10}秒",
+                                    "§6§l[CF]${sender.name}が裏予想で" + thinkbet + "円コインフリップを開いてます！\n表だと思う人は参加してみよう。残り${60 - time * 10}秒",
                                     "§bまたはここをクリック！",
                                     "/cf join ${sender.name}"
                                 )
@@ -102,7 +100,6 @@ class Coinflip : JavaPlugin(),Listener {
                     }
                 }
             }
-
             "join" -> {
                 if (args.size != 2) {
                     sender.sendMessage("§e§l[CF]使い方が間違ってます")
@@ -112,19 +109,15 @@ class Coinflip : JavaPlugin(),Listener {
                 if (player == null) {
                     sender.sendMessage("§e§l[CF]プレイヤーが存在しない、またはオフラインです")
                     return true
-
                 }
                 if (!coindata.containsKey(player.uniqueId)) {
                     sender.sendMessage("§e§l[CF]その部屋は存在しません")
                     return true
-
                 }
-
                 if (player == sender){
                     sender.sendMessage("§e§l[CF]自分の部屋には入れません")
                     return true
                 }
-
                 val bet = coindata[player.uniqueId]?.first
                 if (vault.getBalance(sender.uniqueId) < bet!!) {
                     sender.sendMessage("§e§l[CF]所持金が足りません")
@@ -198,18 +191,18 @@ class Coinflip : JavaPlugin(),Listener {
                         }
                     }
                 }.runTaskAsynchronously(this)
-
                 return true
             }
 
             "help" -> {
                 sender.sendMessage(
-                    "§f§l＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝\n" +
+                    "§f§l＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝\n" +
                             "§6§l/cf create [金額] [heads(表) or tails(表)で\n" +
-                            "§6§l部屋を立てれます。\n" +
+                            "§6§l部屋を作成することができます。\n" +
+                            "注意:部屋を複数立てることはできません。\n" +
                             "§6§l/cf join [Player]で参加できます。\n" +
                             "§6§lまた募集してるところをクリックしても参加できます。\n" +
-                            "§f§l＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝"
+                            "§f§l＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝"
                 )
             }
         }
@@ -223,7 +216,6 @@ class Coinflip : JavaPlugin(),Listener {
             val hover = Text(hoverText)
             hoverEvent = HoverEvent(HoverEvent.Action.SHOW_TEXT, hover)
         }
-
         //////////////////////////////////////////
         //   クリックイベントを作成する
         var clickEvent: ClickEvent? = null
@@ -233,16 +225,13 @@ class Coinflip : JavaPlugin(),Listener {
         val message = ComponentBuilder(text).event(hoverEvent).event(clickEvent).create()
         Bukkit.spigot().broadcast(*message)
     }
-
     override fun onEnable() {
         server.pluginManager.registerEvents(this, this)
         getCommand("cf")?.setExecutor(this)
 
         vault = VaultManager(this)
         saveDefaultConfig()
-
     }
-
     @EventHandler
     fun invclick(e:InventoryClickEvent){
         if(e.view.title() == Component.text("§6§lCoinFlip"))
@@ -252,6 +241,5 @@ class Coinflip : JavaPlugin(),Listener {
     fun quit(e:PlayerQuitEvent) {
         if (coindata.containsKey(e.player.uniqueId))coindata.remove(e.player.uniqueId)
     }
-
 }
 //Created By tororo_1066,Roito_HNW
