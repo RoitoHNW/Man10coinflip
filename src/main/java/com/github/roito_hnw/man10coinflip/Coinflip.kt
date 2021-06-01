@@ -19,7 +19,6 @@ import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.plugin.java.JavaPlugin
-import org.bukkit.scheduler.BukkitRunnable
 import java.util.*
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -51,16 +50,16 @@ class Coinflip : JavaPlugin(),Listener {
                 }
                 when (args[2]) {
                     "heads" -> {
-                        val thinkbet = args[1].toDouble()
+                        val bet = args[1].toDouble()
                         vault.withdraw(sender.uniqueId, args[1].toDouble())
                         coindata[sender.uniqueId] = Pair(args[1].toDouble(), true)
-                       sendHoverText("§6§l[CF]${sender.name}が表予想で" + thinkbet + "円コインフリップを開いてます！\n裏だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
+                       sendHoverText("§6§l[CF]${sender.name}が表予想で" + bet + "円コインフリップを開いてます！\n裏だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
                         Bukkit.getScheduler().runTaskAsynchronously(this, Runnable {
                             for (time in 1..6) {
                                 Thread.sleep(10000)
                                 if (!coindata.containsKey(sender.uniqueId)) return@Runnable
                                 sendHoverText(
-                                    "§6§l[CF]${sender.name}が表予想で" + thinkbet + "円コインフリップを開いてます！\n裏だと思う人は参加してみよう。残り${60 - time * 10}秒",
+                                    "§6§l[CF]${sender.name}が表予想で" + bet + "円コインフリップを開いてます！\n裏だと思う人は参加してみよう。残り${60 - time * 10}秒",
                                     "§bまたはここをクリック！",
                                     "/cf join ${sender.name}"
                                 )
@@ -73,16 +72,16 @@ class Coinflip : JavaPlugin(),Listener {
                         return true
                     }
                     "tails" -> {
-                        val thinkbet = args[1].toDouble()
+                        val bet = args[1].toDouble()
                         vault.withdraw(sender.uniqueId, args[1].toDouble())
                         coindata[sender.uniqueId] = Pair(args[1].toDouble(), false)
-                        sendHoverText("§6§l[CF]${sender.name}が裏予想で" + thinkbet + "円コインフリップを開いてます！\n表だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
+                        sendHoverText("§6§l[CF]${sender.name}が裏予想で" + bet + "円コインフリップを開いてます！\n表だと思う人は参加してみよう","§bまたはここをクリック！","/cf join ${sender.name}")
                         Bukkit.getScheduler().runTaskAsynchronously(this, Runnable {
                             for (time in 1..6) {
                                 Thread.sleep(10000)
                                 if (!coindata.containsKey(sender.uniqueId)) return@Runnable
                                 sendHoverText(
-                                    "§6§l[CF]${sender.name}が裏予想で" + thinkbet + "円コインフリップを開いてます！\n表だと思う人は参加してみよう。残り${60 - time * 10}秒",
+                                    "§6§l[CF]${sender.name}が裏予想で" + bet + "円コインフリップを開いてます！\n表だと思う人は参加してみよう。残り${60 - time * 10}秒",
                                     "§bまたはここをクリック！",
                                     "/cf join ${sender.name}"
                                 )
@@ -126,13 +125,15 @@ class Coinflip : JavaPlugin(),Listener {
                 vault.withdraw(sender.uniqueId, bet)
                 val maincoin = coindata[player.uniqueId]?.second
 
+
+
                 val inv = Bukkit.createInventory(null, 45, Component.text("§6§lCoinFlip"))
                 sender.openInventory(inv)
                 player.openInventory(inv)
-                object : BukkitRunnable() {
-                    override fun run() {
+                Thread{
                         coindata.remove(player.uniqueId)
                         for (i in 0..8) {
+                            //CoinflipのGUI
                             inv.setItem(i, ItemStack(Material.WHITE_STAINED_GLASS_PANE))
                             inv.setItem(i + 36, ItemStack(Material.WHITE_STAINED_GLASS_PANE))
                         }
@@ -153,11 +154,13 @@ class Coinflip : JavaPlugin(),Listener {
                         val headsitem = ItemStack(Material.IRON_NUGGET)
                         val headsmeta = headsitem.itemMeta
                         headsmeta.setCustomModelData(heads)
+                        //プレイヤーの予想コイン
                         headsmeta.displayName(Component.text("§a§l予想：表"))
                         headsitem.itemMeta = headsmeta
                         val tailsitem = ItemStack(Material.IRON_NUGGET)
                         val tailsmeta = tailsitem.itemMeta
                         tailsmeta.setCustomModelData(tails)
+                        //プレイヤーの予想コイン
                         tailsmeta.displayName(Component.text("§b§l予想：裏"))
                         tailsitem.itemMeta = tailsmeta
                         var item = ItemStack(Material.IRON_NUGGET)
@@ -166,33 +169,46 @@ class Coinflip : JavaPlugin(),Listener {
                         item.itemMeta = meta
                         inv.setItem(22, item)
                         var change = true
-                        inv.setItem(16,if (maincoin == true) headsitem else tailsitem)
-                        inv.setItem(28,if (!maincoin!!) headsitem else tailsitem)
+                        inv.setItem(16, if (maincoin == true) headsitem else tailsitem)
+                        inv.setItem(28, if (!maincoin!!) headsitem else tailsitem)
                         for (loop in 1..Random.nextInt(10..21)) {
-                            player.playSound(player.location,Sound.ENTITY_ENDER_DRAGON_SHOOT,0.5f,1f)
+                            player.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_SHOOT, 0.5f, 1f)
                             item = inv.getItem(22)!!
                             meta = item.itemMeta
                             meta.setCustomModelData(if (!change) heads else tails)
+                            //コインに表か裏か名前をつける
                             meta.displayName(if (!change) Component.text("§a§l表") else Component.text("§b§l裏"))
                             item.itemMeta = meta
                             change = !change
                             Thread.sleep(500)
                         }
+
+
+                    //どっちが予想をあてたのか表示する
                         if (maincoin == change) {
                             sender.sendMessage("§6§l[CF]${player.name}が${if (change) "表" else "裏"}の予想を当てました！")
                             player.sendMessage("§6§l[CF]${player.name}が${if (change) "表" else "裏"}の予想を当てました！")
-                            player.playSound(player.location,Sound.ENTITY_ENDER_DRAGON_AMBIENT,1f,1f)
-                            vault.deposit(player.uniqueId, bet!!*2)
+                            player.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_AMBIENT, 1f, 1f)
+                            vault.deposit(player.uniqueId, bet * 2)
+
                         } else {
+
                             sender.sendMessage("§6§l[CF]${sender.name}が${if (change) "表" else "裏"}の予想を当てました！")
                             player.sendMessage("§6§l[CF]${sender.name}が${if (change) "表" else "裏"}の予想を当てました！")
-                            sender.playSound(player.location,Sound.ENTITY_ENDER_DRAGON_AMBIENT,1f,1f)
-                            vault.deposit(sender.uniqueId, bet!!*2)
+                            sender.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_AMBIENT, 1f, 1f)
+                            vault.deposit(sender.uniqueId, bet * 2)
                         }
-                    }
-                }.runTaskAsynchronously(this)
-                return true
+
+
+
+                    Bukkit.getScheduler().runTask(this, Runnable {
+                        Thread.sleep(5000)
+                        sender.closeInventory()
+                        player.closeInventory()
+                    })
+                }.start()
             }
+
 
             "help" -> {
                 sender.sendMessage(
@@ -242,4 +258,5 @@ class Coinflip : JavaPlugin(),Listener {
         if (coindata.containsKey(e.player.uniqueId))coindata.remove(e.player.uniqueId)
     }
 }
-//Created By tororo_1066,Roito_HNW
+
+
