@@ -176,30 +176,38 @@ class Coinflip : JavaPlugin(),Listener {
                             item = inv.getItem(22)!!
                             meta = item.itemMeta
                             meta.setCustomModelData(if (!change) heads else tails)
-                            //コインに表か裏か名前をつける
                             meta.displayName(if (!change) Component.text("§a§l表") else Component.text("§b§l裏"))
                             item.itemMeta = meta
                             change = !change
                             Thread.sleep(500)
                         }
-
-
                     //どっちが予想をあてたのか表示する
                         if (maincoin == change) {
                             sender.sendMessage("§6§l[CF]${player.name}が${if (change) "表" else "裏"}の予想を当てました！")
                             player.sendMessage("§6§l[CF]${player.name}が${if (change) "表" else "裏"}の予想を当てました！")
                             player.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_AMBIENT, 1f, 1f)
-                            vault.deposit(player.uniqueId, bet * 2)
+                                val head = ItemStack(Material.PLAYER_HEAD)
+                                val playermeta: SkullMeta = head.itemMeta as SkullMeta
+                                playermeta.owningPlayer = player
+                                head.itemMeta = meta
+                                inv.setItem(13, head)
+                                vault.deposit(player.uniqueId, bet * 2)
+
+                            //部屋主の頭を設置
 
                         } else {
 
                             sender.sendMessage("§6§l[CF]${sender.name}が${if (change) "表" else "裏"}の予想を当てました！")
                             player.sendMessage("§6§l[CF]${sender.name}が${if (change) "表" else "裏"}の予想を当てました！")
                             sender.playSound(player.location, Sound.ENTITY_ENDER_DRAGON_AMBIENT, 1f, 1f)
-                            vault.deposit(sender.uniqueId, bet * 2)
+                                val head = ItemStack(Material.PLAYER_HEAD)
+                                val sendermeta: SkullMeta = head.itemMeta as SkullMeta
+                                sendermeta.owningPlayer = sender
+                                head.itemMeta = meta
+                                inv.setItem(13, head)
+                                vault.deposit(sender.uniqueId, bet * 2)
+                            //参加者の頭を設置
                         }
-
-
 
                     Bukkit.getScheduler().runTask(this, Runnable {
                         Thread.sleep(5000)
@@ -208,8 +216,6 @@ class Coinflip : JavaPlugin(),Listener {
                     })
                 }.start()
             }
-
-
             "help" -> {
                 sender.sendMessage(
                     "§f§l＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝\n" +
@@ -241,6 +247,7 @@ class Coinflip : JavaPlugin(),Listener {
         val message = ComponentBuilder(text).event(hoverEvent).event(clickEvent).create()
         Bukkit.spigot().broadcast(*message)
     }
+
     override fun onEnable() {
         server.pluginManager.registerEvents(this, this)
         getCommand("cf")?.setExecutor(this)
